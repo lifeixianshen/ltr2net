@@ -6,16 +6,12 @@ import sys
 
 
 def smart_reader(path):
-    if path.endswith('.gz'):
-        return gzip.open(path, 'rt')
-    return open(path, 'r')
+    return gzip.open(path, 'rt') if path.endswith('.gz') else open(path, 'r')
 
 
 def substr_before(x, pattern):
     idx = x.find(pattern)
-    if idx < 0:
-        return x
-    return x[:idx]
+    return x if idx < 0 else x[:idx]
 
 
 class MaxMinMean(object):
@@ -63,6 +59,6 @@ if __name__ == '__main__':
     if not args.quiet:
         sys.stderr.write('\n')
     # save output:
-    keep = dict((str(k), v.to_dict()) for k, v in stats.items())
+    keep = {str(k): v.to_dict() for k, v in stats.items()}
     with open(args.output_file, 'w') as out:
         json.dump(keep, out, indent=2)
