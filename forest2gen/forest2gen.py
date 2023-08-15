@@ -42,7 +42,7 @@ class EvalEnsemble(object):
         self.weight = 1.0
 
     def eval(self, arr):
-        return self.weight * sum([t.eval(arr) for t in self.trees])
+        return self.weight * sum(t.eval(arr) for t in self.trees)
 
     def visit(self, fn):
         fn(self)
@@ -63,7 +63,7 @@ class EvalEnsemble(object):
         # include all observed points
         for split in self.find_splits():
             split_points[split.fid].append(split.value)
-        return dict((fid, set(ps)) for fid, ps in split_points.items())
+        return {fid: set(ps) for fid, ps in split_points.items()}
 
 
 def split_points_to_generator(ensemble, fstats):
@@ -79,8 +79,7 @@ def split_points_to_generator(ensemble, fstats):
 
     for fid, info in fstats.items():
         if fid not in generator_data:
-            generator_data[fid] = list(
-                set([info['min'], info['mean'], info['max']]))
+            generator_data[fid] = list({info['min'], info['mean'], info['max']})
 
     num_features = len(generator_data) + 1
     print('num_features {0}'.format(num_features))
@@ -88,7 +87,7 @@ def split_points_to_generator(ensemble, fstats):
     def generate_batch(n):
         y = np.zeros(n)
         X = np.zeros((n, num_features))
-        for fid in generator_data.keys():
+        for fid in generator_data:
             X[:, fid] = np.random.choice(
                 generator_data[fid], size=n, replace=True)
         for i in range(n):
@@ -140,9 +139,7 @@ def load_ranklib_model_reader(reader):
 
 
 def smart_reader(path):
-    if path.endswith('.gz'):
-        return gzip.open(path, 'rt')
-    return open(path, 'r')
+    return gzip.open(path, 'rt') if path.endswith('.gz') else open(path, 'r')
 
 
 def load_ranklib_model(path):

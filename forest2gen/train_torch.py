@@ -19,10 +19,9 @@ class ApproximateRanker(nn.Module):
         for i in range(len(layers)):
             if i == 0:
                 steps.append(nn.Linear(dim, layers[i]))
-                steps.append(nn.ReLU6())
             else:
                 steps.append(nn.Linear(layers[i-1], layers[i]))
-                steps.append(nn.ReLU6())
+            steps.append(nn.ReLU6())
         steps.append(nn.Linear(layers[-1], 1))
         self.forward_layers = nn.Sequential(*steps)
     def forward(self, xs):
@@ -84,16 +83,15 @@ for i in tqdm(range(len(train_y))):
 print('collected predictions')
 
 print('eval test data')
-ensemble_ys = []
-for i in tqdm(range(len(test_qids))):
-    ensemble_ys.append(ensemble.eval(test_X[i, :]))
-
+ensemble_ys = [
+    ensemble.eval(test_X[i, :]) for i in tqdm(range(len(test_qids)))
+]
 ensemble_aps = compute_aps(ensemble_ys, test_y, test_qids)
 print('ensemble.mAP: {0}'.format(np.mean(ensemble_aps)))
 
 fstats = None
 with smart_reader(args.stats_file) as fp:
-    fstats = dict((int(k), v) for k, v in json.load(fp).items())
+    fstats = {int(k): v for k, v in json.load(fp).items()}
 
 D = len(fstats)+1
 print("fstats.size={0}".format(len(fstats)))
